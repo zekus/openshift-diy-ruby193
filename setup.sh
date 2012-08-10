@@ -2,6 +2,7 @@
 
 cd $OPENSHIFT_TMP_DIR
 
+
 ### yaml
 # get and compile
 wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
@@ -34,3 +35,7 @@ rm -rf ruby*
 
 ### export the bin directory
 export PATH=$OPENSHIFT_RUNTIME_DIR/bin:$PATH
+# install bundler
+cd $OPENSHIFT_REPO_DIR
+gem install bundler
+
