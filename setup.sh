@@ -1,9 +1,11 @@
 #!/bin/sh
-
 OPENSHIFT_ACTION_HOOKS_DIR=$OPENSHIFT_REPO_DIR/.openshift/action_hooks
 cd $OPENSHIFT_TMP_DIR
 
-### yaml
+#####
+##### yaml
+#####
+
 # get and compile
 wget http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
 tar xzf yaml-0.1.4.tar.gz
@@ -11,11 +13,15 @@ cd yaml-0.1.4
 ./configure --prefix=$OPENSHIFT_RUNTIME_DIR
 make
 make install
+
 # clean up
 cd $OPENSHIFT_TMP_DIR
 rm -rf yaml*
 
-### ruby
+#####
+##### ruby
+#####
+
 # get the source
 wget http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p194.tar.gz
 tar xzf ruby-1.9.3-p194.tar.gz
@@ -24,11 +30,13 @@ cd ruby-1.9.3-p194/ext/psych
 export C_INCLUDE_PATH=$OPENSHIFT_RUNTIME_DIR/include
 export LIBYAMLPATH=$OPENSHIFT_RUNTIME_DIR/lib
 sed -i '1i $LIBPATH << ENV["LIBYAMLPATH"]' extconf.rb
+
 # compile
 cd $OPENSHIFT_TMP_DIR/ruby-1.9.3-p194
-./configure --disable-install-doc --prefix=$OPENSHIFT_RUNTIME_DIR
+./configure --enable-shared --disable-install-doc --prefix=$OPENSHIFT_RUNTIME_DIR --with-libyaml
 make
 make install
+
 # clean up
 cd $OPENSHIFT_TMP_DIR
 rm -rf ruby*
@@ -37,8 +45,12 @@ rm -rf ruby*
 export PATH=$OPENSHIFT_RUNTIME_DIR/bin:$PATH
 cd $OPENSHIFT_REPO_DIR
 
-### bundler
+#####
+##### bundler
+#####
+
 gem install bundler
+
 # setup the pre-build script
 echo > $OPENSHIFT_ACTION_HOOKS_DIR/pre-build
 $OPENSHIFT_ACTION_HOOKS_DIR/pre-build << 'EOF'
@@ -56,6 +68,7 @@ if [ $? -gt 0 ]; then
   echo "Unable to create symlink to assets directory, using existing directory in repository"
 fi
 EOF
+
 # setup the build script
 echo > $OPENSHIFT_ACTION_HOOKS_DIR/build
 $OPENSHIFT_ACTION_HOOKS_DIR/build << 'EOF'
@@ -63,6 +76,7 @@ pushd ${OPENSHIFT_REPO_DIR} > /dev/null
 bundle install --deployment
 popd > /dev/null
 EOF
+
 # setup the deploy script
 echo > $OPENSHIFT_ACTION_HOOKS_DIR/deploy
 $OPENSHIFT_ACTION_HOOKS_DIR/deploy << 'EOF'
@@ -74,8 +88,12 @@ bundle exec rake assets:precompile RAILS_ENV="production"
 popd > /dev/null
 EOF
 
-### unicorn
+#####
+##### unicorn
+#####
+
 gem install unicorn
+
 # setup the start script
 echo > $OPENSHIFT_ACTION_HOOKS_DIR/start
 $OPENSHIFT_ACTION_HOOKS_DIR/start << 'EOF'
@@ -83,6 +101,7 @@ $OPENSHIFT_ACTION_HOOKS_DIR/start << 'EOF'
 export PATH=$OPENSHIFT_RUNTIME_DIR/bin:$PATH
 unicorn -l $OPENSHIFT_INTERNAL_IP:$OPENSHIFT_INTERNAL_PORT -E "production" -D
 EOF
+
 # setup the stop script
 echo > $OPENSHIFT_ACTION_HOOKS_DIR/stop
 $OPENSHIFT_ACTION_HOOKS_DIR/stop << 'EOF'
