@@ -81,6 +81,7 @@ EOF
   # setup the build script
   echo > $OPENSHIFT_ACTION_HOOKS_DIR/build
   cat << 'EOF' > $OPENSHIFT_ACTION_HOOKS_DIR/build
+  export PATH=$OPENSHIFT_RUNTIME_DIR/bin:$PATH
   pushd ${OPENSHIFT_REPO_DIR} > /dev/null
   bundle install --deployment
   popd > /dev/null
@@ -89,6 +90,7 @@ EOF
   # setup the deploy script
   echo > $OPENSHIFT_ACTION_HOOKS_DIR/deploy
   cat << 'EOF' > $OPENSHIFT_ACTION_HOOKS_DIR/deploy
+  export PATH=$OPENSHIFT_RUNTIME_DIR/bin:$PATH
   pushd ${OPENSHIFT_REPO_DIR} > /dev/null
   # Run db:migrate
   #bundle exec rake db:migrate RAILS_ENV="production"
